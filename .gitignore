@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+*.so
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# Virtual env
+.venv/
+venv/
+ENV/
+env/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data (raw/processed) - НЕ коммитим датасеты
+data/raw/
+data/processed/
+data/features/
+
+# Generated artifacts
+artifacts/
+mlruns/
+
+# Logs
+*.log
+
+# Secrets
+.env
+.env.*
+
