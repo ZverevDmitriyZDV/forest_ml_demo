@@ -1,0 +1,5 @@
+data:
+  raw_dir: data/raw
+  level1_file: trees_level1.csv
+  daily_file: trees_daily_dataset.csv
+  processed_dir: data/processed

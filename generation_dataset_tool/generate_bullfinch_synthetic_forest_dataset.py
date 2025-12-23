@@ -25,20 +25,15 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 
+THIS_DIR = Path(__file__).resolve().parent
+DEFAULT_SPEC = THIS_DIR / "Bullfinch_Synthetic_Forestry_Dataset_Spec.xlsx"
+DEFAULT_OUT_DIR = (THIS_DIR / ".." / "data" / "raw").resolve()
+
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument(
-        "--spec",
-        type=str,
-        default=str(Path(__file__).resolve().parent / "Bullfinch_Synthetic_Forestry_Dataset_Spec.xlsx"),
-    )
-
-    ap.add_argument(
-        "--out_dir",
-        type=str,
-        default=str(Path(__file__).resolve().parents[1] / "data" / "raw"),
-    )
+    ap.add_argument("--spec", type=str, default=str(DEFAULT_SPEC))
+    ap.add_argument("--out_dir", type=str, default=str(DEFAULT_OUT_DIR))
     args = ap.parse_args()
 
     out_dir = Path(args.out_dir)
