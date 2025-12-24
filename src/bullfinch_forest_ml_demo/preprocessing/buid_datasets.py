@@ -26,7 +26,6 @@ from pathlib import Path
 import os
 import pandas as pd
 
-
 # ---- Project root discovery (safe for src-layout) ----
 # this file: .../src/bullfinch_forest_ml_demo/preprocessing/buid_datasets.py
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
@@ -170,6 +169,8 @@ def _write_outputs(cfg: PreprocessConfig, l1: pd.DataFrame, d: pd.DataFrame, mer
     d.to_parquet(out_dir / cfg.out_daily, index=False)
     merged.to_parquet(out_dir / cfg.out_merged, index=False)
 
+    # TODO: artifacts/preprocessing_report.json (краткий отчёт: пропуски, дубли, строки до/после)
+
     print("[OK] Wrote:")
     print(" -", out_dir / cfg.out_level1)
     print(" -", out_dir / cfg.out_daily)
@@ -190,3 +191,5 @@ def run(cfg: PreprocessConfig | None = None) -> None:
 
 if __name__ == "__main__":
     run()
+
+
