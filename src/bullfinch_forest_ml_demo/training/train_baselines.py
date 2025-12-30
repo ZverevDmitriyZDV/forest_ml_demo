@@ -152,70 +152,70 @@ def main() -> None:
         )
 
     # ================= Task B: Forecasting =================
-    fc_cfg = ForecastingConfig(data_path=data_path)
+    for h in (1, 7):
+        fc_cfg = ForecastingConfig(data_path=data_path, horizon_days=h)
+        with mlflow.start_run(run_name="task_b_forecasting") as run:
+            fc_out: Dict[str, Any] = run_task_forecasting(fc_cfg)
 
-    with mlflow.start_run(run_name="task_b_forecasting") as run:
-        fc_out: Dict[str, Any] = run_task_forecasting(fc_cfg)
+            # ---- params ----
+            mlflow.log_param("task", "forecasting")
+            mlflow.log_param("model", "linear_regression")
+            mlflow.log_param("target", fc_cfg.target_col)
+            mlflow.log_param("horizon_days", int(fc_out["horizon_days"]))
+            mlflow.log_param("lags", str(fc_cfg.lags))
+            mlflow.log_param("rolling_windows", str(fc_cfg.rolling_windows))
+            mlflow.log_param("test_fraction_by_time", float(fc_cfg.test_fraction_by_time))
 
-        # ---- params ----
-        mlflow.log_param("task", "forecasting")
-        mlflow.log_param("model", "linear_regression")
-        mlflow.log_param("target", fc_cfg.target_col)
-        mlflow.log_param("horizon_days", int(fc_out["horizon_days"]))
-        mlflow.log_param("lags", str(fc_cfg.lags))
-        mlflow.log_param("rolling_windows", str(fc_cfg.rolling_windows))
-        mlflow.log_param("test_fraction_by_time", float(fc_cfg.test_fraction_by_time))
+            # ---- metrics ----
+            mlflow.log_metric("mae", float(fc_out["mae"]))
+            mlflow.log_metric("rmse", float(fc_out["rmse"]))
+            mlflow.log_metric("mae_naive", float(fc_out["mae_naive"]))
+            mlflow.log_metric("rmse_naive", float(fc_out["rmse_naive"]))
+            mlflow.log_metric("train_size", float(fc_out["n_train"]))
+            mlflow.log_metric("test_size", float(fc_out["n_test"]))
+            mlflow.log_metric("features_n", float(fc_out["features_n"]))
 
-        # ---- metrics ----
-        mlflow.log_metric("mae", float(fc_out["mae"]))
-        mlflow.log_metric("rmse", float(fc_out["rmse"]))
-        mlflow.log_metric("mae_naive", float(fc_out["mae_naive"]))
-        mlflow.log_metric("rmse_naive", float(fc_out["rmse_naive"]))
-        mlflow.log_metric("train_size", float(fc_out["n_train"]))
-        mlflow.log_metric("test_size", float(fc_out["n_test"]))
-        mlflow.log_metric("features_n", float(fc_out["features_n"]))
+            print("\n=== Task B: Trunk Lean Forecasting (LinearRegression lag baseline) ===")
+            print("MAE:", fc_out["mae"], " | RMSE:", fc_out["rmse"])
+            print("Naive MAE:", fc_out["mae_naive"], " | Naive RMSE:", fc_out["rmse_naive"])
+            print("Train/Test:", fc_out["n_train"], "/", fc_out["n_test"])
+            print("Features:", fc_out["features_n"])
+            print("Horizon days:", fc_out["horizon_days"])
 
-        print("\n=== Task B: Trunk Lean Forecasting (LinearRegression lag baseline) ===")
-        print("MAE:", fc_out["mae"], " | RMSE:", fc_out["rmse"])
-        print("Naive MAE:", fc_out["mae_naive"], " | Naive RMSE:", fc_out["rmse_naive"])
-        print("Train/Test:", fc_out["n_train"], "/", fc_out["n_test"])
-        print("Features:", fc_out["features_n"])
-        print("Horizon days:", fc_out["horizon_days"])
+            # ---- artifacts ----
+            run_art_dir = artifacts_root / "task_b_forecasting"
 
-        # ---- artifacts ----
-        run_art_dir = artifacts_root / "task_b_forecasting"
+            # sample predictions (CSV)
+            # Expect fc_out to return: y_test, y_pred, y_pred_naive, X_test(optional), test_df(optional)
+            y_test = fc_out.get("y_test")
+            y_pred = fc_out.get("y_pred")
+            y_pred_naive = fc_out.get("y_pred_naive")
 
-        # sample predictions (CSV)
-        # Expect fc_out to return: y_test, y_pred, y_pred_naive, X_test(optional), test_df(optional)
-        y_test = fc_out.get("y_test")
-        y_pred = fc_out.get("y_pred")
-        y_pred_naive = fc_out.get("y_pred_naive")
+            # If you return a test dataframe with ids/timestamps, we’ll include them.
+            test_df = fc_out.get("test_df")  # optional: dataframe with timestamp/tree_id/target
+            sample_n = 100
 
-        # If you return a test dataframe with ids/timestamps, we’ll include them.
-        test_df = fc_out.get("test_df")  # optional: dataframe with timestamp/tree_id/target
-        sample_n = 100
+            if isinstance(test_df, pd.DataFrame):
+                df_sample = test_df.head(sample_n).copy()
+                df_sample["y_true"] = list(y_test[:sample_n])
+                df_sample["y_pred"] = list(y_pred[:sample_n])
+                df_sample["y_pred_naive"] = list(y_pred_naive[:sample_n])
+            else:
+                df_sample = pd.DataFrame(
+                    {
+                        "y_true": list(y_test[:sample_n]),
+                        "y_pred": list(y_pred[:sample_n]),
+                        "y_pred_naive": list(y_pred_naive[:sample_n]),
+                    }
+                )
 
-        if isinstance(test_df, pd.DataFrame):
-            df_sample = test_df.head(sample_n).copy()
-            df_sample["y_true"] = list(y_test[:sample_n])
-            df_sample["y_pred"] = list(y_pred[:sample_n])
-            df_sample["y_pred_naive"] = list(y_pred_naive[:sample_n])
-        else:
-            df_sample = pd.DataFrame(
-                {
-                    "y_true": list(y_test[:sample_n]),
-                    "y_pred": list(y_pred[:sample_n]),
-                    "y_pred_naive": list(y_pred_naive[:sample_n]),
-                }
+            _log_csv_artifact(df_sample, run_art_dir, "predictions_sample.csv")
+
+            # ---- log model ----
+            mlflow.sklearn.log_model(
+                sk_model=fc_out["pipeline"],
+                name="model",
             )
-
-        _log_csv_artifact(df_sample, run_art_dir, "predictions_sample.csv")
-
-        # ---- log model ----
-        mlflow.sklearn.log_model(
-            sk_model=fc_out["pipeline"],
-            name="model",
-        )
 
     print("\nMLflow runs logged + models + artifacts saved successfully.")
 

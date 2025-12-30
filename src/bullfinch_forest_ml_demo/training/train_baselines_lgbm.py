@@ -132,54 +132,50 @@ def main() -> None:
         print("Macro F1:", out["macro_f1"])
 
     # ================= Task B: Forecasting (LightGBM) =================
-    fc_cfg = ForecastingLGBMConfig(data_path=data_path)
+    for horizon in (1, 7):
+        fc_cfg = ForecastingLGBMConfig(data_path=data_path, horizon_days=horizon)
 
-    with mlflow.start_run(run_name="task_b_forecasting_lgbm"):
-        out = run_task_forecasting_lgbm(fc_cfg)
+        with mlflow.start_run(run_name=f"task_b_forecasting_lgbm_h{horizon}"):
+            out = run_task_forecasting_lgbm(fc_cfg)
 
-        # Params
-        mlflow.log_param("task", "forecasting")
-        mlflow.log_param("model", "lightgbm_regressor")
-        mlflow.log_param("target", "trunk_deg")
-        mlflow.log_param("horizon_days", int(out["horizon_days"]))
+            mlflow.log_param("task", "forecasting")
+            mlflow.log_param("model", "lightgbm_regressor")
+            mlflow.log_param("target", "trunk_deg")
+            mlflow.log_param("horizon_days", int(out["horizon_days"]))
 
-        # Metrics
-        mlflow.log_metric("mae", out["mae"])
-        mlflow.log_metric("rmse", out["rmse"])
-        mlflow.log_metric("mae_naive", out["mae_naive"])
-        mlflow.log_metric("rmse_naive", out["rmse_naive"])
-        mlflow.log_metric("train_size", out["n_train"])
-        mlflow.log_metric("test_size", out["n_test"])
-        mlflow.log_metric("features_n", out["features_n"])
+            # metrics
+            mlflow.log_metric("mae", out["mae"])
+            mlflow.log_metric("rmse", out["rmse"])
+            mlflow.log_metric("mae_naive", out["mae_naive"])
+            mlflow.log_metric("rmse_naive", out["rmse_naive"])
+            mlflow.log_metric("train_size", out["n_train"])
+            mlflow.log_metric("test_size", out["n_test"])
+            mlflow.log_metric("features_n", out["features_n"])
 
-        # Model
-        mlflow.sklearn.log_model(out["pipeline"], name="model")
+            mlflow.sklearn.log_model(out["pipeline"], name="model")
 
-        # ---- Artifacts: predictions sample (CSV) ----
-        y_test = pd.Series(out["y_test"]).reset_index(drop=True)
-        y_pred = pd.Series(out["y_pred"]).reset_index(drop=True)
-        y_pred_naive = pd.Series(out.get("y_pred_naive", [None] * len(y_test))).reset_index(drop=True)
+            # ---- Artifacts: predictions sample (CSV) ----
+            y_test = pd.Series(out["y_test"]).reset_index(drop=True)
+            y_pred = pd.Series(out["y_pred"]).reset_index(drop=True)
+            y_pred_naive = pd.Series(out.get("y_pred_naive", [None] * len(y_test))).reset_index(drop=True)
 
-        df_pred = pd.DataFrame({
-            "y_true": y_test.astype(float),
-            "y_pred": y_pred.astype(float),
-            "y_pred_naive": pd.to_numeric(y_pred_naive, errors="coerce"),
-            "abs_error": (y_test.astype(float) - y_pred.astype(float)).abs(),
-        })
+            df_pred = pd.DataFrame({
+                "y_true": y_test.astype(float),
+                "y_pred": y_pred.astype(float),
+                "y_pred_naive": pd.to_numeric(y_pred_naive, errors="coerce"),
+                "abs_error": (y_test.astype(float) - y_pred.astype(float)).abs(),
+            })
 
-        # если ты возвращаешь test_df (tree_id/timestamp/current trunk_deg) — добавим в CSV
-        if "test_df" in out and out["test_df"] is not None:
-            meta = out["test_df"].reset_index(drop=True)
-            df_pred = pd.concat([meta, df_pred], axis=1)
+            if "test_df" in out and out["test_df"] is not None:
+                meta = out["test_df"].reset_index(drop=True)
+                df_pred = pd.concat([meta, df_pred], axis=1)
 
-        df_pred_sample = df_pred.head(200)
+            run_art_dir = artifacts_root / f"task_b_forecasting_lgbm_h{horizon}"
+            _log_csv(df_pred.head(200), run_art_dir, "predictions_sample.csv")
 
-        run_art_dir = artifacts_root / "task_b_forecasting_lgbm"
-        _log_csv(df_pred_sample, run_art_dir, "predictions_sample.csv")
-
-        print("\n=== Task B: Trunk Lean Forecasting (LightGBM) ===")
-        print("MAE:", out["mae"], "| RMSE:", out["rmse"])
-        print("Naive MAE:", out["mae_naive"], "| Naive RMSE:", out["rmse_naive"])
+            print(f"\n=== Task B: Trunk Lean Forecasting (LightGBM, h={horizon}) ===")
+            print("MAE:", out["mae"], "| RMSE:", out["rmse"])
+            print("Naive MAE:", out["mae_naive"], "| Naive RMSE:", out["rmse_naive"])
 
     print("\nMLflow runs logged + models + artifacts saved successfully.")
 
