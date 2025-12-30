@@ -154,7 +154,7 @@ def main() -> None:
     # ================= Task B: Forecasting =================
     for h in (1, 7):
         fc_cfg = ForecastingConfig(data_path=data_path, horizon_days=h)
-        with mlflow.start_run(run_name="task_b_forecasting") as run:
+        with mlflow.start_run(run_name=f"task_b_forecasting_h{h}") as run:
             fc_out: Dict[str, Any] = run_task_forecasting(fc_cfg)
 
             # ---- params ----
@@ -183,7 +183,7 @@ def main() -> None:
             print("Horizon days:", fc_out["horizon_days"])
 
             # ---- artifacts ----
-            run_art_dir = artifacts_root / "task_b_forecasting"
+            run_art_dir = artifacts_root / f"task_b_forecasting_h{h}"
 
             # sample predictions (CSV)
             # Expect fc_out to return: y_test, y_pred, y_pred_naive, X_test(optional), test_df(optional)

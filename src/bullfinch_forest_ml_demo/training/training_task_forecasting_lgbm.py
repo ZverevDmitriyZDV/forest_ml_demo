@@ -16,6 +16,9 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 
 
+LEAK_COLS = ["health_status", "risk_flag", "estimated_age", "biomass"]
+
+
 @dataclass(frozen=True)
 class ForecastingLGBMConfig:
     data_path: Path
@@ -82,7 +85,7 @@ def _build_pipeline(X: pd.DataFrame, cfg: ForecastingLGBMConfig) -> Pipeline:
     cat_tf = Pipeline(
         steps=[
             ("imputer", SimpleImputer(strategy="most_frequent")),
-            ("onehot", OneHotEncoder(handle_unknown="ignore",sparse_output=False)),
+            ("onehot", OneHotEncoder(handle_unknown="ignore")),
         ]
     )
 
@@ -115,11 +118,17 @@ def run_task_forecasting_lgbm(cfg: ForecastingLGBMConfig) -> Dict[str, object]:
     df = _load_data(cfg)
     df_feat = _make_lag_features(df, cfg)
 
-    # Keep rows where current target exists (for naive) and features exist
-    df_feat = df_feat.dropna(subset=[cfg.target_col]).reset_index(drop=True)
+    required_feature_cols = (
+        [cfg.target_col]
+        + [f"{cfg.target_col}_lag_{lag}" for lag in cfg.lags]
+        + [f"{cfg.target_col}_roll_mean_{w}" for w in cfg.rolling_windows]
+        + [f"{cfg.target_col}_roll_std_{w}" for w in cfg.rolling_windows]
+        + [f"{cfg.target_col}_delta_1", f"{cfg.target_col}_delta_7"]
+        + ["y_target"]
+    )
+    df_feat = df_feat.dropna(subset=required_feature_cols).reset_index(drop=True)
 
-    # Drop leakage cols: group id + future target
-    drop_cols = [cfg.group_col, "y_target"]
+    drop_cols = [cfg.group_col, "y_target"] + LEAK_COLS
     X_cols = [c for c in df_feat.columns if c not in drop_cols]
 
     train_df, test_df = _time_split(df_feat, cfg)
@@ -130,7 +139,6 @@ def run_task_forecasting_lgbm(cfg: ForecastingLGBMConfig) -> Dict[str, object]:
     X_test = test_df[X_cols].copy()
     y_test = test_df["y_target"].astype(float).values
 
-    # Naive baseline
     y_pred_naive = _naive_persistence_baseline(test_df, cfg)
     mae_naive = mean_absolute_error(y_test, y_pred_naive)
     rmse_naive = float(np.sqrt(mean_squared_error(y_test, y_pred_naive)))
@@ -155,6 +163,6 @@ def run_task_forecasting_lgbm(cfg: ForecastingLGBMConfig) -> Dict[str, object]:
         "y_test": y_test,
         "y_pred": y_pred,
         "y_pred_naive": y_pred_naive,
-        "test_df": test_df[[cfg.group_col, cfg.time_col, cfg.target_col]].copy(),  # удобно для CSV
+        "test_df": test_df[[cfg.group_col, cfg.time_col, cfg.target_col]].copy(),
+        "feature_columns": X_cols,
     }
-
