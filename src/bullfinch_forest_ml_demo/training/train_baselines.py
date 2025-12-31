@@ -149,6 +149,7 @@ def main() -> None:
         mlflow.sklearn.log_model(
             sk_model=cls_out["pipeline"],
             name="model",
+
         )
 
     # ================= Task B: Forecasting =================
@@ -212,6 +213,7 @@ def main() -> None:
             _log_csv_artifact(df_sample, run_art_dir, "predictions_sample.csv")
 
             # ---- log model ----
+            print(type(fc_out["pipeline"]))
             mlflow.sklearn.log_model(
                 sk_model=fc_out["pipeline"],
                 name="model",

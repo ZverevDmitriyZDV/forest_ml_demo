@@ -1,4 +1,6 @@
 python -m uvicorn bullfinch_forest_ml_demo.api.app:app --reload
+docker compose -f docker/docker-compose.yml logs -f api
+docker compose -f docker/docker-compose.yml logs -f api
 
 http://127.0.0.1:8000/health
 http://127.0.0.1:8000/docs
@@ -68,3 +70,13 @@ POST /predict/trunk (h=1 and h=7) change days "horizon_days": 7
     "leaf_color_index": 0.85
   }
 }
+
+start docker
+docker compose -f docker/docker-compose.yml up --build
+
+stop docker
+docker compose -f docker/docker-compose.yml down
+
+logs
+docker compose -f docker/docker-compose.yml logs -f api
+

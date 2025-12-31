@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# venv / local
+venv/
+.venv/
+.env
+
+# IDE
+.idea/
+.vscode/
+
+# git
+.git/
+.gitignore
+
+# data / artifacts
+mlruns/
+data/
+*.parquet
+
+# OS
+.DS_Store
+Thumbs.db
