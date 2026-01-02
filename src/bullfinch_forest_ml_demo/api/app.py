@@ -6,18 +6,19 @@ from typing import Any, Dict, List, Optional
 from fastapi import FastAPI, HTTPException
 from dotenv import load_dotenv
 
-from .schemas import (
+from .api_schemas import (
     HealthPredictRequest,
     HealthPredictResponse,
     ForecastPredictRequest,
     ForecastPredictResponse,
 )
-from .models import load_models, Models
+from .model_loader import load_models, Models
 from .features.engineering import (
     get_expected_columns,
     prepare_input_df,
 )
-from .features.constants import CAT_COLS_BASE, DERIVED_FEATURES, TRUNK_EXAMPLE, PREDICT_HEALTH
+
+from .features.schema import build_schema_payload
 
 # 1) ENV_FILE опционально
 env_file = os.getenv("ENV_FILE")
@@ -79,33 +80,15 @@ def health() -> Dict[str, str]:
 
 @app.get("/schema")
 def schema() -> Dict[str, Any]:
-    """
-    Возвращает ожидаемые схемы входа для моделей + подсказки.
-    Полезно для Swagger, дебага и клиентов API.
-    """
     if MODELS is None:
         raise HTTPException(status_code=503, detail="Models not loaded")
 
-    health_cols = get_expected_columns(MODELS.health_model) or []
-    trunk_h1_cols = get_expected_columns(MODELS.forecast_model_h1) or []
-    trunk_h7_cols: List[str] = []
-    if MODELS.forecast_model_h7 is not None:
-        trunk_h7_cols = get_expected_columns(MODELS.forecast_model_h7) or []
+    return build_schema_payload(
+        health_model=MODELS.health_model,
+        trunk_h1_model=MODELS.forecast_model_h1,
+        trunk_h7_model=MODELS.forecast_model_h7,
+    )
 
-    return {
-        "categorical_base": sorted(list(CAT_COLS_BASE)),
-        "base_to_l1_mapping_rule": "If model expects '<col>_l1' and request provides '<col>', API copies it.",
-        "derived_features_auto": sorted(list(DERIVED_FEATURES)),
-        "models": {
-            "health": {"expected_columns": health_cols},
-            "trunk_h1": {"expected_columns": trunk_h1_cols},
-            "trunk_h7": {"expected_columns": trunk_h7_cols},
-        },
-        "examples": {
-            "predict_health": PREDICT_HEALTH,
-            "predict_trunk": TRUNK_EXAMPLE
-        },
-    }
 
 
 @app.post("/predict/health", response_model=HealthPredictResponse)
