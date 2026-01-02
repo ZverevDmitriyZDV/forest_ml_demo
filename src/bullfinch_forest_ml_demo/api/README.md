@@ -1,6 +1,5 @@
+set ENV_FILE=.env.local
 python -m uvicorn bullfinch_forest_ml_demo.api.app:app --reload
-docker compose -f docker/docker-compose.yml logs -f api
-docker compose -f docker/docker-compose.yml logs -f api
 
 http://127.0.0.1:8000/health
 http://127.0.0.1:8000/docs
