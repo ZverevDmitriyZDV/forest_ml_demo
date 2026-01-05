@@ -1,9 +1,3 @@
-set ENV_FILE=.env.local
-python -m uvicorn bullfinch_forest_ml_demo.api.app:app --reload
-
-http://127.0.0.1:8000/health
-http://127.0.0.1:8000/docs
-
 check healthy
 {
   "features": {
@@ -70,15 +64,3 @@ POST /predict/trunk (h=1 and h=7) change days "horizon_days": 7
   }
 }
 
-start docker
-docker compose -f docker/docker-compose.yml up --build
-
-stop docker
-docker compose -f docker/docker-compose.yml down
-
-logs
-docker compose -f docker/docker-compose.yml logs -f api
-
-set MLFLOW_CORS_ALLOWED_ORIGINS=*
-set MLFLOW_ALLOWED_HOSTS=localhost,127.0.0.1,host.docker.internal
-mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri "sqlite:///E:/Bullfintch_Earth/bullfinch-forest-ml-demo/mlflow_server/mlflow.db" --artifacts-destination "file:///E:/Bullfintch_Earth/bullfinch-forest-ml-demo/mlflow_server/artifacts"
