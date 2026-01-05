@@ -24,8 +24,6 @@ from .features.schema import build_schema_payload
 env_file = os.getenv("ENV_FILE")
 if env_file and os.path.exists(env_file):
     load_dotenv(env_file, override=True)
-else:
-    load_dotenv(override=False)
 
 app = FastAPI(title="Bullfinch Forest ML Demo API", version="0.1.0")
 MODELS: Models | None = None

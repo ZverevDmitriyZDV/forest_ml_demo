@@ -29,16 +29,6 @@ spec:
             - secretRef:
                 name: bullfinch-env
 
-          # Гарантированно не ломаем Docker/Local: в k8s всегда такой tracking
-          env:
-            - name: MLFLOW_TRACKING_URI
-              value: "file:///app/mlruns"
-
-          volumeMounts:
-            - name: mlruns
-              mountPath: /app/mlruns
-              readOnly: true
-
           # Ресурсы: иначе часто ловят ExitCode 137 (OOMKill) при загрузке моделей/панд
           resources:
             requests:
@@ -76,8 +66,3 @@ spec:
             timeoutSeconds: 2
             failureThreshold: 3
 
-      volumes:
-        - name: mlruns
-          hostPath:
-            path: /run/desktop/mnt/host/e/Bullfintch Earth/bullfinch-forest-ml-demo/mlruns
-            type: Directory

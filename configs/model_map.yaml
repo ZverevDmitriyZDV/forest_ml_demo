@@ -1,0 +1,33 @@
+# config/model_map.yaml
+
+mlflow:
+  # Для локального запуска (UI/Training) обычно так:
+  tracking_uri: "http://host.docker.internal:5000"
+
+
+  # Для k8s позже можно будет заменить на:
+  # tracking_uri: "http://mlflow.bullfinch.svc.cluster.local:5000"
+
+selection:
+  # Чем реально управляем: какая "семья" моделей используется в API
+  # Допустимые значения: sklearn | lgbm
+  health: lgbm
+  trunk_h1: sklearn
+  trunk_h7: lgbm
+
+registry:
+  # Здесь — реестр (model registry names) + alias
+  # Формат: "models:/<registered_model_name>@<alias>"
+  # alias обычно: prod
+
+  health:
+    sklearn: "models:/bullfinch-health@prod"
+    lgbm:    "models:/bullfinch-health-lgbm@prod"
+
+  trunk_h1:
+    sklearn: "models:/bullfinch-health-h1@prod"
+    lgbm:    "models:/bullfinch-trunk-lgbm-h1@prod"
+
+  trunk_h7:
+    sklearn: "models:/bullfinch-health-h7@prod"
+    lgbm:    "models:/bullfinch-trunk-lgbm-h7@prod"

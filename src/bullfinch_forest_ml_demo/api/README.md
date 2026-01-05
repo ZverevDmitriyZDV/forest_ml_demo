@@ -79,3 +79,6 @@ docker compose -f docker/docker-compose.yml down
 logs
 docker compose -f docker/docker-compose.yml logs -f api
 
+set MLFLOW_CORS_ALLOWED_ORIGINS=*
+set MLFLOW_ALLOWED_HOSTS=localhost,127.0.0.1,host.docker.internal
+mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri "sqlite:///E:/Bullfintch_Earth/bullfinch-forest-ml-demo/mlflow_server/mlflow.db" --artifacts-destination "file:///E:/Bullfintch_Earth/bullfinch-forest-ml-demo/mlflow_server/artifacts"
