@@ -92,11 +92,12 @@ If the MLflow UI loads, the server is running correctly.
 ## 6. Dataset Generation and Model Training (First Run)
 Generate dataset
 ```bash
-python tools/generate_dataset.py
+python genaration_dataset_tool/generate_bullfinch_synthetic_forest_dataset.py
 ```
 Train models
 ```bash
-python tools/train_models.py
+python src/bullfinch_forest_ml_demo/training/train_baselines.py
+python src/bullfinch_forest_ml_demo/training/train_baselines_lgbm.py
 ```
 After training:
 
