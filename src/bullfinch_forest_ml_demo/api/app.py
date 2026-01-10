@@ -20,7 +20,6 @@ from .features.engineering import (
 
 from .features.schema import build_schema_payload
 
-# 1) ENV_FILE опционально
 env_file = os.getenv("ENV_FILE")
 if env_file and os.path.exists(env_file):
     load_dotenv(env_file, override=True)
@@ -54,9 +53,7 @@ def _schema_error_422(e: Exception, endpoint: str, model: Any) -> HTTPException:
 def startup() -> None:
     global MODELS
 
-    # ВАЖНО: не ломаем Docker.
     # - Docker: MLFLOW_TRACKING_URI=file:///app/mlruns
-    # - Local: можно оставить пустым и дать file:///... на Windows
     tracking_uri = os.getenv("MLFLOW_TRACKING_URI", "")
 
     health_model_uri = _require_env("HEALTH_MODEL_URI")
@@ -86,7 +83,6 @@ def schema() -> Dict[str, Any]:
         trunk_h1_model=MODELS.forecast_model_h1,
         trunk_h7_model=MODELS.forecast_model_h7,
     )
-
 
 
 @app.post("/predict/health", response_model=HealthPredictResponse)

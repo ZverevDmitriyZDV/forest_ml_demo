@@ -22,6 +22,9 @@ LEAK_COLS = ["health_status", "risk_flag", "estimated_age", "biomass"]
 @dataclass(frozen=True)
 class ForecastingConfig:
     data_path: Path
+    test_fraction_by_time: float = 0.2
+    random_state: int = 42
+
     target_col: str = "trunk_deg"
     time_col: str = "timestamp"
     group_col: str = "tree_id"
@@ -29,10 +32,6 @@ class ForecastingConfig:
     horizon_days: int = 1  # predict next day
     lags: Tuple[int, ...] = (1, 2, 7, 14)
     rolling_windows: Tuple[int, ...] = (7, 14)
-
-    test_fraction_by_time: float = 0.2
-    random_state: int = 42
-
 
 def _load_data(cfg: ForecastingConfig) -> pd.DataFrame:
     df = pd.read_parquet(cfg.data_path)
@@ -103,6 +102,8 @@ def _build_pipeline(X: pd.DataFrame) -> Pipeline:
     )
 
     model = LinearRegression()
+
+
     return Pipeline(steps=[("preprocess", pre), ("model", model)])
 
 
@@ -166,3 +167,5 @@ def run_task_forecasting(cfg: ForecastingConfig) -> Dict[str, object]:
         "horizon_days": int(cfg.horizon_days),
         "feature_columns": X_cols,  # useful for API debugging
     }
+
+

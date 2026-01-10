@@ -11,11 +11,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgomp1 \
   && rm -rf /var/lib/apt/lists/*
 
-# копируем метаданные и исходники
 COPY pyproject.toml README.md /app/
 COPY src /app/src
 
-# ставим пакет
 RUN pip install --no-cache-dir -U pip setuptools wheel \
     && pip install --no-cache-dir .
 

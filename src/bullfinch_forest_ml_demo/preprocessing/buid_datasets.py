@@ -12,11 +12,6 @@ Outputs (default):
 
 Run:
   python -m bullfinch_forest_ml_demo.preprocessing.buid_datasets
-
-Optional:
-  set environment variables (or adjust dataclass defaults):
-    BULLFINCH_RAW_DIR=data/raw
-    BULLFINCH_PROCESSED_DIR=data/processed
 """
 
 from __future__ import annotations
@@ -169,7 +164,6 @@ def _write_outputs(cfg: PreprocessConfig, l1: pd.DataFrame, d: pd.DataFrame, mer
     d.to_parquet(out_dir / cfg.out_daily, index=False)
     merged.to_parquet(out_dir / cfg.out_merged, index=False)
 
-    # TODO: artifacts/preprocessing_report.json (краткий отчёт: пропуски, дубли, строки до/после)
 
     print("[OK] Wrote:")
     print(" -", out_dir / cfg.out_level1)

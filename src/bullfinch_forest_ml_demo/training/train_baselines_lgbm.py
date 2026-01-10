@@ -98,7 +98,7 @@ def main() -> None:
         mlflow.log_metric("test_size", float(out["n_test"]))
         mlflow.log_metric("features_n", float(out["features_n"]))
 
-        # log model + registry (без warning)
+        # log model + registry (No warning)
         model_info = mlflow.sklearn.log_model(out["pipeline"], name="model")
         ver = register_logged_model_and_set_alias(
             client=client,

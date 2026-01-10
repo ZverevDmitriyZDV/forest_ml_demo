@@ -128,8 +128,8 @@ def main() -> None:
         labels = sorted(pd.Series(y_test).astype(str).unique().tolist())
         _log_confusion_matrix_png(y_test, y_pred, labels, run_art_dir, "confusion_matrix.png")
 
-        # ---- log model (ВАЖНО) ----
-        # Берём logged-model URI напрямую — это убирает WARNING при register_model
+        # ---- log model  ----
+        # We take the logged-model URI directly - this removes the WARNING when register_model
         model_info = mlflow.sklearn.log_model(sk_model=cls_out["pipeline"], name="model")
         logged_uri = model_info.model_uri
 

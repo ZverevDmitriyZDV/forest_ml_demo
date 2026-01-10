@@ -15,11 +15,11 @@ def build_schema_payload(
     trunk_h7_model: Optional[Any] = None,
 ) -> Dict[str, Any]:
     """
-    Собирает стабильный JSON-контракт для /schema:
+    JSON-schema:
     - base categorical keys
     - derived features which API can compute
-    - expected columns for each loaded model (из sklearn feature_names_in_)
-    - примеры запросов
+    - expected columns for each loaded model (from sklearn feature_names_in_)
+    - examples
     """
 
     health_cols: List[str] = get_expected_columns(health_model) or []

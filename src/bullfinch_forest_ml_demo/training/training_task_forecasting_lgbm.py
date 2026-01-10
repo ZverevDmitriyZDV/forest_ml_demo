@@ -166,3 +166,5 @@ def run_task_forecasting_lgbm(cfg: ForecastingLGBMConfig) -> Dict[str, object]:
         "test_df": test_df[[cfg.group_col, cfg.time_col, cfg.target_col]].copy(),
         "feature_columns": X_cols,
     }
+
+

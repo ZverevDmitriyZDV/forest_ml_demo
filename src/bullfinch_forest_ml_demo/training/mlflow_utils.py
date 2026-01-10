@@ -15,12 +15,7 @@ def project_root_from_file(file: str) -> Path:
 
 
 def load_env(project_root: Path) -> None:
-    """
-    Стабильная загрузка env независимо от cwd:
-    1) ENV_FILE (может быть относительным — относительно корня проекта)
-    2) .env.local в корне
-    3) .env в корне
-    """
+
     env_file = os.getenv("ENV_FILE")
     if env_file:
         p = Path(env_file)
@@ -40,7 +35,7 @@ def load_env(project_root: Path) -> None:
 
 def setup_mlflow_or_die() -> MlflowClient:
     """
-    Требуем именно MLflow server (http/https), потому что нам нужен Registry + aliases.
+    MLflow server (http/https),we need Registry + aliases.
     """
     tracking_uri = os.getenv("MLFLOW_TRACKING_URI", "http://127.0.0.1:5000").strip()
     mlflow.set_tracking_uri(tracking_uri)
@@ -69,9 +64,8 @@ def register_logged_model_and_set_alias(
     alias: str = "prod",
 ) -> int:
     """
-    ВАЖНО: регистрируем НЕ через runs:/.../model, а через logged model uri,
-    который вернёт log_model(...).model_uri.
-    Тогда НЕ будет warning: "Run has no artifacts at artifact path 'model'..."
+    Register NOT via runs:/.../model, but via the logged model uri,
+    which will return log_model(...).model_uri.
     """
     ensure_registered_model(client, registry_name)
 
@@ -84,6 +78,5 @@ def register_logged_model_and_set_alias(
 
 def print_links(run_id: str) -> None:
     uri = mlflow.get_tracking_uri().rstrip("/")
-    # ссылки для удобства презентации
-    print(f"🏃 View run at: {uri}/#/experiments/1/runs/{run_id}")
-    print(f"🧪 View experiments at: {uri}/#/experiments")
+    print(f"View run at: {uri}/#/experiments/1/runs/{run_id}")
+    print(f"View experiments at: {uri}/#/experiments")

@@ -36,6 +36,7 @@ def _load_data(cfg: ClassificationConfig) -> pd.DataFrame:
         raise ValueError(f"Missing target column '{cfg.target_col}' in {cfg.data_path}")
     return df
 
+
 def _select_features(df: pd.DataFrame, cfg: ClassificationConfig) -> Tuple[pd.DataFrame, pd.Series, pd.Series]:
     # Keep only rows with target
     d = df.dropna(subset=[cfg.target_col]).copy()
@@ -93,7 +94,6 @@ def _build_pipeline(X: pd.DataFrame) -> Pipeline:
 
     pipe = Pipeline(steps=[("preprocess", preprocessor), ("model", clf)])
     return pipe
-
 
 
 def run_task_classification(cfg: ClassificationConfig) -> Dict[str, object]:

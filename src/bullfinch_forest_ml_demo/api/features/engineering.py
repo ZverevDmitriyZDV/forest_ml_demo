@@ -10,13 +10,13 @@ from .constants import CAT_COLS_BASE, NUM_COLS_HINTS, DERIVED_FEATURES
 
 def get_expected_columns(model: Any) -> Optional[List[str]]:
     """
-    Возвращает список колонок, которые ожидает pipeline/model на входе.
-    Для sklearn обычно доступно feature_names_in_.
+    Returns a list of columns that the pipeline/model expects as input.
+    For sklearn, feature_names_in_ is typically available.
     """
     if hasattr(model, "feature_names_in_"):
         return list(getattr(model, "feature_names_in_"))
 
-    # если это Pipeline — попробуем найти step с feature_names_in_
+    # if Pipeline — find step with feature_names_in_
     if hasattr(model, "named_steps"):
         for step in reversed(list(model.named_steps.values())):
             if hasattr(step, "feature_names_in_"):
@@ -47,7 +47,7 @@ def default_value_for(col: str) -> Any:
 
 def compute_derived(features: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Пытаемся вычислить недостающие engineered-features для trunk-forecasting.
+    trying to calculate the missing engineered features for trunk-forecasting.
     """
     f = dict(features)
 
@@ -84,10 +84,10 @@ def compute_derived(features: Dict[str, Any]) -> Dict[str, Any]:
 
 def align_to_expected(features: Dict[str, Any], expected_cols: List[str]) -> pd.DataFrame:
     """
-    Делает DataFrame строго с ожидаемыми колонками:
-    - если ждут *_l1, а есть base -> копируем
-    - если ждут derived trunk features -> пытаемся вычислить
-    - всё остальное заполняем дефолтами
+    Creates a DataFrame with only the expected columns:
+        - if *_l1 is expected, but base is present, we copy it
+        - if derived trunk features are expected, we try to calculate it
+        - everything else is filled with defaults
     """
     f = compute_derived(features)
     out: Dict[str, Any] = {}
@@ -107,7 +107,7 @@ def align_to_expected(features: Dict[str, Any], expected_cols: List[str]) -> pd.
 
     df = pd.DataFrame([out], columns=expected_cols)
 
-    # типовка: planting_year часто int
+    # planting_year to int
     if "planting_year" in df.columns:
         df["planting_year"] = pd.to_numeric(df["planting_year"], errors="coerce").fillna(0).astype(int)
     if "planting_year_l1" in df.columns:

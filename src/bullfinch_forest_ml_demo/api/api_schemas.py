@@ -5,8 +5,8 @@ from pydantic import BaseModel, Field
 
 
 class HealthPredictRequest(BaseModel):
-    # Любой набор фичей как key:value (и числовые, и категориальные)
-    # Важно: ключи должны совпадать с колонками, на которых обучали пайплайн
+    # Any set of features as key:value (both numeric and categorical)
+    # Important: keys must match the columns on which the pipeline was trained
     features: Dict[str, Any] = Field(..., description="Feature dict matching training columns")
 
 

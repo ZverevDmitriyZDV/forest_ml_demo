@@ -24,12 +24,10 @@ spec:
             - containerPort: 8000
               name: http
 
-          # Берём переменные из Secret (как у тебя уже есть bullfinch-env)
           envFrom:
             - secretRef:
                 name: bullfinch-env
 
-          # Ресурсы: иначе часто ловят ExitCode 137 (OOMKill) при загрузке моделей/панд
           resources:
             requests:
               cpu: "200m"
@@ -38,13 +36,11 @@ spec:
               cpu: "1000m"
               memory: "1Gi"
 
-          # Самое важное: start может быть долгий -> нужен startupProbe.
-          # Пока startupProbe не успешен, liveness/readiness не "убьют" контейнер.
           startupProbe:
             httpGet:
               path: /health
               port: 8000
-            failureThreshold: 60   # 60 * 5s = 300s (5 минут на старт)
+            failureThreshold: 60
             periodSeconds: 5
             timeoutSeconds: 2
 
